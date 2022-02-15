@@ -1,22 +1,49 @@
-import keras
-from flask import Flask, render_template, request
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[15]:
+
+
+from flask import Flask
+
+
+# In[19]:
+
 
 app = Flask(__name__)
 
 
+# In[20]:
+
+
+from flask import request, render_template
+from keras.models import load_model
+
 @app.route("/", methods=["GET", "POST"])
 def index():
-    if request.method == "GET":
-        return render_template("index.html", result="GET")
+    if request.method=="POST":
+        NPTA = request.form.get("NPTA")
+        TLTA = request.form.get("TLTA")
+        WCTA = request.form.get("WCTA")
+        print(NPTA, TLTA, WCTA)
+        model = load_model("BKRNN")
+        pred = model.predict([[float(NPTA), float(TLTA), float(WCTA)]])
+        print(pred)
+        s = "The predicted bankruptcy score is : " + str(pred)
+        return(render_template("index.html", result=s))
+    else:
+        return(render_template("index.html", result="2")) 
 
-    attr1 = float(request.form.get("attr1"))
-    attr2 = float(request.form.get("attr2"))
-    attr3 = float(request.form.get("attr3"))
-    model = keras.models.load_model("src/bankruptcy")
-    results = model.predict([[attr1, attr2, attr3]])
-    return render_template("index.html", result=str(results[0]))
+
+# In[ ]:
 
 
 if __name__ == "__main__":
-    app.debug = True
     app.run()
+
+
+# In[ ]:
+
+
+
+
